@@ -4,7 +4,7 @@ export type Cell = 'X' | 'O' | null;
 export type Row = readonly [Cell, Cell, Cell, Cell];
 export type Board = readonly [Row, Row, Row, Row];
 
-const SIZE = 4;
+export const SIZE = 4;
 const CELL_COUNT = SIZE * SIZE;
 
 function toCell(ch: string, index: number): Cell {
