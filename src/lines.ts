@@ -1,4 +1,4 @@
-import { SIZE } from './types.js';
+import { SIZE } from './board.js';
 
 /** 0-indexed [row, col]. */
 export type Coord = readonly [row: number, col: number];

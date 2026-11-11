@@ -1,4 +1,4 @@
-import type { Board, Player } from './types.js';
+import type { Board, Player } from './board.js';
 
 /**
  * 4x4 tic-tac-toe rules. Stateless: every method takes the board as a parameter.

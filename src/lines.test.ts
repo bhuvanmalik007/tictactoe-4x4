@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { WINNING_LINES, type Line } from './lines.js';
-import { SIZE } from './types.js';
+import { SIZE } from './board.js';
 
 /** Order-insensitive key for a line, so the same cells in a different order count as a duplicate. */
 const lineKey = (line: Line): string =>
