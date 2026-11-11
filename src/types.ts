@@ -1,6 +1,7 @@
 import { InvalidBoardError } from './errors.js';
 
-export type Cell = 'X' | 'O' | null;
+export type Player = 'X' | 'O';
+export type Cell = Player | null;
 export type Row = readonly [Cell, Cell, Cell, Cell];
 export type Board = readonly [Row, Row, Row, Row];
 
