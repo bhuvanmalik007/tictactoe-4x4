@@ -100,7 +100,8 @@ export class TicTacToe {
    * @throws InvalidBoardError if the board is invalid.
    */
   public anyMovesLeft(board: Board): boolean {
-    throw new Error('Not implemented');
+    const winner = validatedWinner(board);
+    return winner === null && board.flat().includes(null);
   }
 
   /**
@@ -110,6 +111,6 @@ export class TicTacToe {
    * @throws InvalidBoardError if the board is invalid.
    */
   public isGameOver(board: Board): boolean {
-    throw new Error('Not implemented');
+    return !this.anyMovesLeft(board);
   }
 }

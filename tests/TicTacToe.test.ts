@@ -174,3 +174,71 @@ describe('TicTacToe.checkWinner board validation', () => {
     });
   });
 });
+
+describe('TicTacToe.anyMovesLeft and isGameOver', () => {
+  const game = new TicTacToe();
+
+  // isGameOver is always the opposite of anyMovesLeft, but both columns are spelled out.
+  it.each<[string, Board, { movesLeft: boolean; gameOver: boolean }]>([
+    ['empty board (in progress)', board(
+      '....',
+      '....',
+      '....',
+      '....',
+    ), { movesLeft: true, gameOver: false }],
+    ['partial board, no winner (in progress)', board(
+      'XO..',
+      '.X..',
+      '..O.',
+      '....',
+    ), { movesLeft: true, gameOver: false }],
+    ['X has won with empty cells left', board(
+      'XXXX',
+      'O.O.',
+      '.O..',
+      '....',
+    ), { movesLeft: false, gameOver: true }],
+    ['O has won with empty cells left', board(
+      'X.X.',
+      '.X..',
+      '...X',
+      'OOOO',
+    ), { movesLeft: false, gameOver: true }],
+    ['full board, no winner (draw)', board(
+      'XXOO',
+      'OOXX',
+      'XXOO',
+      'OOXX',
+    ), { movesLeft: false, gameOver: true }],
+    ['full board, O has won', board(
+      'OOOO',
+      'XXOX',
+      'XOXX',
+      'XXOO',
+    ), { movesLeft: false, gameOver: true }],
+  ])('%s', (_label, b, expected) => {
+    expect(game.anyMovesLeft(b)).toBe(expected.movesLeft);
+    expect(game.isGameOver(b)).toBe(expected.gameOver);
+  });
+
+  describe('throws InvalidBoardError on an invalid board', () => {
+    it.each<[string, Board]>([
+      ['both players win', board(
+        'XXXX',
+        'OOOO',
+        '....',
+        '....',
+      )],
+      ['impossible counts (O moved first)', board(
+        'O...',
+        '....',
+        '....',
+        '....',
+      )],
+      ['malformed array', [[null, null, null]] as unknown as Board],
+    ])('%s', (_label, b) => {
+      expect(() => game.anyMovesLeft(b)).toThrow(InvalidBoardError);
+      expect(() => game.isGameOver(b)).toThrow(InvalidBoardError);
+    });
+  });
+});
