@@ -5,9 +5,6 @@ export type Cell = Player | null;
 export type Row = readonly [Cell, Cell, Cell, Cell];
 export type Board = readonly [Row, Row, Row, Row];
 
-export const SIZE = 4;
-const CELL_COUNT = SIZE * SIZE;
-
 function toCell(ch: string, index: number): Cell {
   switch (ch) {
     case 'X':
@@ -31,13 +28,13 @@ export function parseBoard(str: string): Board {
   if (typeof str !== 'string') {
     throw new InvalidBoardError(`Expected a string, got ${typeof str}`);
   }
-  if (str.length !== CELL_COUNT) {
-    throw new InvalidBoardError(`Expected ${CELL_COUNT} characters, got ${str.length}`);
+  if (str.length !== 16) {
+    throw new InvalidBoardError(`Expected 16 characters, got ${str.length}`);
   }
 
   const cell = (i: number): Cell => toCell(str.charAt(i), i);
   const row = (r: number): Row => {
-    const start = r * SIZE;
+    const start = r * 4;
     return [cell(start), cell(start + 1), cell(start + 2), cell(start + 3)];
   };
 

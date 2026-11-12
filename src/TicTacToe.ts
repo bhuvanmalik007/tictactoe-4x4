@@ -1,4 +1,4 @@
-import { SIZE, type Board, type Cell, type Player } from './board.js';
+import type { Board, Cell, Player } from './board.js';
 import { InvalidBoardError } from './errors.js';
 import { WINNING_LINES, type Coord, type Line } from './lines.js';
 
@@ -6,15 +6,15 @@ const isCell = (value: unknown): value is Cell => value === 'X' || value === 'O'
 
 /** Runtime shape check: 4x4, every cell 'X' | 'O' | null. Index loops so sparse-array holes are caught. */
 function assertWellFormed(board: unknown): asserts board is Board {
-  if (!Array.isArray(board) || board.length !== SIZE) {
-    throw new InvalidBoardError(`Board must be an array of ${SIZE} rows`);
+  if (!Array.isArray(board) || board.length !== 4) {
+    throw new InvalidBoardError('Board must be an array of 4 rows');
   }
-  for (let r = 0; r < SIZE; r++) {
+  for (let r = 0; r < 4; r++) {
     const row: unknown = board[r];
-    if (!Array.isArray(row) || row.length !== SIZE) {
-      throw new InvalidBoardError(`Row ${r} must be an array of ${SIZE} cells`);
+    if (!Array.isArray(row) || row.length !== 4) {
+      throw new InvalidBoardError(`Row ${r} must be an array of 4 cells`);
     }
-    for (let c = 0; c < SIZE; c++) {
+    for (let c = 0; c < 4; c++) {
       if (!isCell(row[c])) {
         throw new InvalidBoardError(`Invalid cell at [${r}, ${c}]: ${JSON.stringify(row[c])}`);
       }
@@ -83,8 +83,14 @@ function validatedWinner(board: Board): Player | null {
   return winner;
 }
 
+/** Validates the board; true if nobody has won and an empty cell remains. */
+function movesLeft(board: Board): boolean {
+  return validatedWinner(board) === null && board.flat().includes(null);
+}
+
 /**
- * 4x4 tic-tac-toe rules. Stateless: every method takes the board as a parameter.
+ * 4x4 tic-tac-toe rules. Stateless: every method takes the board as a parameter and
+ * does not use `this`, so methods can be passed around detached (e.g. `boards.map(game.isGameOver)`).
  *
  * Every method validates the board first and throws `InvalidBoardError` if it is invalid:
  * - the board is not 4x4, or a cell is not 'X' | 'O' | null;
@@ -114,8 +120,7 @@ export class TicTacToe {
    * @throws InvalidBoardError if the board is invalid.
    */
   public anyMovesLeft(board: Board): boolean {
-    const winner = validatedWinner(board);
-    return winner === null && board.flat().includes(null);
+    return movesLeft(board);
   }
 
   /**
@@ -125,6 +130,7 @@ export class TicTacToe {
    * @throws InvalidBoardError if the board is invalid.
    */
   public isGameOver(board: Board): boolean {
-    return !this.anyMovesLeft(board);
+    // Module function, not `this.anyMovesLeft`, so the method still works when called detached.
+    return !movesLeft(board);
   }
 }

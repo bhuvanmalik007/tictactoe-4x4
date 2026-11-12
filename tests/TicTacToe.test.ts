@@ -301,3 +301,71 @@ describe('TicTacToe.checkWinner with multiple winning lines', () => {
     expect(game.checkWinner(b)).toBe('X');
   });
 });
+
+describe('TicTacToe multiple winning lines for O', () => {
+  const game = new TicTacToe();
+
+  it('O with row 3 + column 3 sharing (3,3): returns O', () => {
+    const b = board(
+      'XXXO',
+      'X.XO',
+      'XX.O',
+      'OOOO',
+    );
+    expect(game.checkWinner(b)).toBe('O');
+  });
+
+  it('O with disjoint lines: throws with a disjoint message', () => {
+    // The only such board with valid counts and no X line: O owns both diagonals,
+    // the corners and the center box, and the two diagonals share no cell.
+    const b = board(
+      'OXXO',
+      'XOOX',
+      'XOOX',
+      'OXXO',
+    );
+    expect(() => game.checkWinner(b)).toThrow(InvalidBoardError);
+    expect(() => game.checkWinner(b)).toThrow(/disjoint/i);
+  });
+});
+
+describe('anyMovesLeft and isGameOver on disjoint winning lines', () => {
+  const game = new TicTacToe();
+  const disjoint = board(
+    'XXXX',
+    'OOO.',
+    'OXXO',
+    'OXXO',
+  );
+
+  it('anyMovesLeft throws with a disjoint message', () => {
+    expect(() => game.anyMovesLeft(disjoint)).toThrow(InvalidBoardError);
+    expect(() => game.anyMovesLeft(disjoint)).toThrow(/disjoint/i);
+  });
+
+  it('isGameOver throws with a disjoint message', () => {
+    expect(() => game.isGameOver(disjoint)).toThrow(InvalidBoardError);
+    expect(() => game.isGameOver(disjoint)).toThrow(/disjoint/i);
+  });
+});
+
+describe('TicTacToe methods called detached', () => {
+  const { checkWinner, anyMovesLeft, isGameOver } = new TicTacToe();
+  const won = board(
+    'XXXX',
+    'O.O.',
+    '.O..',
+    '....',
+  );
+
+  it('work without a `this` binding', () => {
+    expect(checkWinner(won)).toBe('X');
+    expect(anyMovesLeft(won)).toBe(false);
+    expect(isGameOver(won)).toBe(true);
+  });
+
+  it('work as array callbacks', () => {
+    const empty = board('....', '....', '....', '....');
+    expect([empty, won].map(new TicTacToe().isGameOver)).toEqual([false, true]);
+  });
+});

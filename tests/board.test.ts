@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { InvalidBoardError } from './errors.js';
-import { parseBoard } from './board.js';
+import { InvalidBoardError } from '../src/errors.js';
+import { parseBoard } from '../src/board.js';
 
 describe('parseBoard', () => {
   describe('valid input', () => {

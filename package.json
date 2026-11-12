@@ -1,7 +1,8 @@
 {
   "name": "tictactoe-4x4",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
+  "description": "4x4 tic-tac-toe winner checker with board validation",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -10,8 +11,7 @@
   "type": "module",
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "description": "",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^26.6.6",
     "typescript": "^7.0.2",

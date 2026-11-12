@@ -63,8 +63,10 @@ function parseBoard(s: string): Board; // standalone, not part of the class
 
 ## Layout
 
-- Source goes in `src/`, with tests next to it as `*.test.ts`.
+- Source goes in `src/`; all tests go in `tests/` as `*.test.ts`, importing from `../src/*.js`.
 - `module: nodenext` is set, so relative imports need the `.js` extension (`./board.js`).
+- The board is fixed at 4x4: there is no size constant, so the literal 4 (and 16) is used directly.
+- `TicTacToe` methods must not use `this`; callers may pass them around detached.
 
 ## Working style
 
