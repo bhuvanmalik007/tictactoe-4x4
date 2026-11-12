@@ -1,6 +1,6 @@
 import { SIZE, type Board, type Cell, type Player } from './board.js';
 import { InvalidBoardError } from './errors.js';
-import { WINNING_LINES, type Coord } from './lines.js';
+import { WINNING_LINES, type Coord, type Line } from './lines.js';
 
 const isCell = (value: unknown): value is Cell => value === 'X' || value === 'O' || value === null;
 
@@ -36,15 +36,16 @@ function countMarks(board: Board): { x: number; o: number } {
   };
 }
 
-/** Players who fill at least one winning line. */
-function winnersOf(board: Board): Set<Player> {
-  const winners = new Set<Player>();
-  for (const line of WINNING_LINES) {
-    const cells = line.map((coord) => cellAt(board, coord));
-    const first = cells[0];
-    if (first != null && cells.every((cell) => cell === first)) winners.add(first);
-  }
-  return winners;
+/** The winning lines fully filled by `player`. */
+function winningLinesOf(board: Board, player: Player): Line[] {
+  return WINNING_LINES.filter((line) => line.every((coord) => cellAt(board, coord) === player));
+}
+
+/** True if at least one cell is in EVERY given line (intersection of all, not pairwise overlap). */
+function shareCommonCell(lines: readonly Line[]): boolean {
+  const [first, ...rest] = lines;
+  if (first === undefined) return true;
+  return first.some(([r, c]) => rest.every((line) => line.some(([lr, lc]) => lr === r && lc === c)));
 }
 
 /** Validates the board against every rule and returns its winner, or null. Throws InvalidBoardError. */
@@ -56,20 +57,30 @@ function validatedWinner(board: Board): Player | null {
     throw new InvalidBoardError(`Impossible mark counts X=${x}, O=${o}: X moves first, so X − O must be 0 or 1`);
   }
 
-  const winners = winnersOf(board);
-  if (winners.has('X') && winners.has('O')) {
+  const xLines = winningLinesOf(board, 'X');
+  const oLines = winningLinesOf(board, 'O');
+  if (xLines.length > 0 && oLines.length > 0) {
     throw new InvalidBoardError('Both X and O have a winning line');
   }
-  if (winners.has('X') && x !== o + 1) {
+
+  const winner: Player | null = xLines.length > 0 ? 'X' : oLines.length > 0 ? 'O' : null;
+  if (winner === null) return null;
+
+  if (winner === 'X' && x !== o + 1) {
     throw new InvalidBoardError(`X has won but X=${x}, O=${o}; an X win requires X = O + 1`);
   }
-  if (winners.has('O') && x !== o) {
+  if (winner === 'O' && x !== o) {
     throw new InvalidBoardError(`O has won but X=${x}, O=${o}; an O win requires X = O`);
   }
 
-  if (winners.has('X')) return 'X';
-  if (winners.has('O')) return 'O';
-  return null;
+  // One move completes every line at once, so all of the winner's lines must share that cell.
+  if (!shareCommonCell(winner === 'X' ? xLines : oLines)) {
+    throw new InvalidBoardError(
+      `${winner} has disjoint winning lines: no single cell is common to all of them, so the board is unreachable in legal play`,
+    );
+  }
+
+  return winner;
 }
 
 /**
@@ -79,15 +90,18 @@ function validatedWinner(board: Board): Player | null {
  * - the board is not 4x4, or a cell is not 'X' | 'O' | null;
  * - mark counts are impossible (X moves first, so X − O must be 0 or 1);
  * - both players have a winning line;
- * - X has won but X ≠ O + 1, or O has won but X ≠ O.
+ * - X has won but X ≠ O + 1, or O has won but X ≠ O;
+ * - the winner's winning lines do not all share at least one common cell.
  */
 export class TicTacToe {
   /**
    * Returns the player who has filled one of the 20 winning lines, or `null` if nobody has.
    * `null` covers both a draw and a game still in progress.
-   * One player having several winning lines at once is valid.
+   * A player may have several winning lines only if ALL of them share at least one common cell
+   * (the move that completed them). Pairwise overlap is not enough.
    *
-   * @throws InvalidBoardError if both players have a winning line, or the board is otherwise invalid.
+   * @throws InvalidBoardError if both players have a winning line; if the winner's lines are
+   * disjoint (no cell common to all of them; the message says so); or if the board is otherwise invalid.
    */
   public checkWinner(board: Board): Player | null {
     return validatedWinner(board);

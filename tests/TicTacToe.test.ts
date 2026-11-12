@@ -242,3 +242,62 @@ describe('TicTacToe.anyMovesLeft and isGameOver', () => {
     });
   });
 });
+
+describe('TicTacToe.checkWinner with multiple winning lines', () => {
+  const game = new TicTacToe();
+  // All boards have valid counts (X = O + 1) and O owns no line, so only the
+  // shared-cell rule decides the outcome.
+
+  it('row 0 + column 0 sharing (0,0): returns X', () => {
+    const b = board(
+      'XXXX',
+      'XOOO',
+      'XO.O',
+      'X.O.',
+    );
+    expect(game.checkWinner(b)).toBe('X');
+  });
+
+  it('row 0 + overlapping 2x2 box (sharing (0,1) and (0,2)): returns X', () => {
+    const b = board(
+      'XXXX',
+      'OXXO',
+      'O.O.',
+      '.O..',
+    );
+    expect(game.checkWinner(b)).toBe('X');
+  });
+
+  it('row 0 + bottom-middle 2x2 box (no shared cell): throws', () => {
+    const b = board(
+      'XXXX',
+      'OOO.',
+      'OXXO',
+      'OXXO',
+    );
+    expect(() => game.checkWinner(b)).toThrow(InvalidBoardError);
+    expect(() => game.checkWinner(b)).toThrow(/disjoint/i);
+  });
+
+  it('row 0 + anti-diagonal + 2x2 box (overlap pairwise, no common cell): throws', () => {
+    // row0∩anti = (0,3), row0∩box = (0,1),(0,2), anti∩box = (1,2); no cell is in all three.
+    const b = board(
+      'XXXX',
+      'OXXO',
+      'OXOO',
+      'XOO.',
+    );
+    expect(() => game.checkWinner(b)).toThrow(InvalidBoardError);
+    expect(() => game.checkWinner(b)).toThrow(/disjoint/i);
+  });
+
+  it('a single winning line still returns the winner (regression)', () => {
+    const b = board(
+      'XXXX',
+      'O.O.',
+      '.O..',
+      '....',
+    );
+    expect(game.checkWinner(b)).toBe('X');
+  });
+});

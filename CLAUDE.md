@@ -43,7 +43,10 @@ function parseBoard(s: string): Board; // standalone, not part of the class
   - X has won but `X ≠ O + 1`.
   - O has won but `X ≠ O`.
   - A board array is not 4x4, or a cell is not 'X' | 'O' | null. Check this at runtime; don't rely only on the types.
-- One player having several winning lines at once is valid.
+  - The winner has disjoint winning lines (see below). The error message says the player has disjoint winning lines.
+- A player may have several winning lines only if ALL of them share at least one common cell (the move that completed them).
+  - Check the intersection of all the lines, not pairwise overlap. Lines that overlap in pairs but have no cell common to all of them are disjoint.
+  - Disjoint winning lines can't happen in legal play, so the board is invalid.
 
 ## Parser
 
@@ -56,6 +59,7 @@ function parseBoard(s: string): Board; // standalone, not part of the class
 
 - `InvalidBoardError` extends `Error` and sets `name = 'InvalidBoardError'`.
 - Tests assert the error class, not the message text.
+  - Exception: the disjoint-lines tests also check that the message contains "disjoint", to prove that this rule is the one throwing.
 
 ## Layout
 
